@@ -1,6 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
-const { sendMail } = require('../utils/sendMail');
-const prisma = new PrismaClient();
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
+import { sendMail } from '../utils/sendMail.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config();
 
 
 const register = async (req, res) => {
@@ -42,7 +47,7 @@ const register = async (req, res) => {
             data: { verificationToken: token }
         });
 
-        await sendMail(user.email, "Verify your email", "Click the link to verify your email", `<a href="http://localhost:3000/api/v1/verify/${token}">Verify Email</a>`);
+        await sendMail(user.email, "Verify your email", "Click the link to verify your email", `<a href="http://localhost:3000/api/v1/users/verify/${token}">Verify Email</a>`);
 
         return res.status(201).json({message: "User created successfully", user});
     } catch (error) {
@@ -171,7 +176,7 @@ const forgotPassword = async (req, res) => {
             where: {
                 email: email
             }
-        });
+        });   
 
         if(!user) {
             return res.status(400).json({message: "User not found"});
@@ -181,10 +186,10 @@ const forgotPassword = async (req, res) => {
         
         const updatedUser = await prisma.user.update({
             where: { id: user.id },
-            data: { passwordResetToken: token, passwordResetTokenExpiry: new Date(Date.now() + 3600000) } // 1 hour expiry
+            data: { passwordResetToken: token, passwordResetExpiry: new Date(Date.now() + 3600000) } // 1 hour expiry
         });
 
-        await sendMail(user.email, "Reset your password", "Click the link to reset your password", `<a href="http://localhost:3000/api/v1/reset/${token}">Reset Password</a>`);
+        await sendMail(user.email, "Reset your password", "Click the link to reset your password: `http://localhost:3000/api/v1/users/reset/${token}` ", `<a href="http://localhost:3000/api/v1/users/reset/${token}">Reset Password</a>`);
 
         return res.status(200).json({message: "Password reset link sent to email"});
         
@@ -195,20 +200,23 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     const token = req.params.token;
+    
     const { password } = req.body;
+    
     try {
         if(!token || !password) {
             return res.status(400).json({message: "Token and password are required"});
         }
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
             where: {
-                passwordResetToken: token,
-                passwordResetTokenExpiry: {
-                    gte: new Date(Date.now())
-                }
+              passwordResetToken: token,
+              passwordResetExpiry: {  // Note: Matches schema field name
+                gte: new Date()  // current time
+              }
             }
-        });
+          });
+
 
         if(!user) {
             return res.status(400).json({message: "Invalid or expired token"});
@@ -218,8 +226,9 @@ const resetPassword = async (req, res) => {
         
         const updatedUser = await prisma.user.update({
             where: { id: user.id },
-            data: { password: hashedPassword, passwordResetToken: null, passwordResetTokenExpiry: null }
+            data: { password: hashedPassword, passwordResetToken: null, passwordResetExpiry: null }
         });
+
 
         return res.status(200).json({message: "Password reset successfully", user: updatedUser});
         

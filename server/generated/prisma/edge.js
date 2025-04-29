@@ -133,7 +133,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\web development\\100x\\project2\\server\\generated\\prisma",
+      "value": "D:\\web development\\100x\\AUTH-MONGO AND POSTGRES\\project2\\server\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -147,11 +147,11 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\web development\\100x\\project2\\server\\prisma\\schema.prisma",
+    "sourceFilePath": "D:\\web development\\100x\\AUTH-MONGO AND POSTGRES\\project2\\server\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
@@ -161,11 +161,12 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "postgresql://neondb_owner:npg_D2GkZX0OwUoF@ep-floral-pine-a48fzv48-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
+        "value": null
       }
     }
   },
